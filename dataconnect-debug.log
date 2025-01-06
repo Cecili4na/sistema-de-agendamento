@@ -1,0 +1,14 @@
+I1217 12:13:00.591139   66291 load.go:37] Reloading schema and connectors...
+I1217 12:13:00.610284   66291 control.go:45] [engine.Service /emulator/agenda_laps e484] UpdateSchema(): done sources: schema/schema.gql [1384B] 
+I1217 12:13:00.622158   66291 control.go:73] [engine.Service /emulator/agenda_laps e484] UpdateConnector(default): done sources: connector/mutations.gql [1163B] connector/queries.gql [1855B] 
+I1217 12:13:00.644839   66291 codegen.go:82] [connector "default" javascriptSdk] Generating sources into "/Users/ana/agenda_laps/dataconnect-generated/js/default-connector"
+I1217 12:13:00.652609   66291 collector.go:107] schema extensions wrote into "/Users/ana/agenda_laps/dataconnect/.dataconnect/schema"
+Generated sources: prelude.gql [65151B] 
+I1217 12:13:00.653758   66291 collector.go:107] connector "default" javascriptSdk wrote into "/Users/ana/agenda_laps/dataconnect-generated/js/default-connector"
+Generated sources: index.d.ts [264B] esm/index.esm.js [184B] esm/package.json [17B] index.cjs.js [225B] package.json [634B] 
+I1217 12:13:00.657852   66291 installsdk.go:48] Package @firebasegen/default-connector is already installed. Skipping installation
+I1217 12:13:00.658191   66291 load.go:115] Finished reloading
+I1217 12:13:00.662877   66291 dev.go:95] Listening on address (HTTP + gRPC): 127.0.0.1:9399
+I1217 12:13:00.664254   66291 dev.go:95] Listening on address (HTTP + gRPC): [::1]:9399
+I1217 12:13:05.964168   66291 control.go:45] [engine.Service /emulator/agenda_laps 9f8f] UpdateSchema(): done sources: schema/schema.gql [1384B] 
+I1217 12:13:05.964582   66291 control.go:73] [engine.Service /emulator/agenda_laps 9f8f] UpdateConnector(default): done sources: connector/mutations.gql [1163B] connector/queries.gql [1855B] 

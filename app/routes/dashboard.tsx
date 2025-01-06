@@ -5,14 +5,20 @@ import { collection, query, where, getDocs, Timestamp } from "firebase/firestore
 import type { Appointment } from "~/types";
 import { Calendar } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { User } from "lucide-react";
+import { User, X, Clock, Calendar as CalendarIcon } from "lucide-react";
 
 export default function Dashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const navigate = useNavigate();
   const user = auth.currentUser;
+
+  const timeSlots = [
+    "08:00", "09:00", "10:00", "11:00",
+    "14:00", "15:00", "16:00", "17:00"
+  ];
 
   useEffect(() => {
     const loadAppointments = async () => {
@@ -21,14 +27,12 @@ export default function Dashboard() {
         return;
       }
 
-      // Ajuste para pegar a data corretamente
       const start = new Date(selectedDate);
       start.setHours(0, 0, 0, 0);
       const end = new Date(selectedDate);
       end.setHours(23, 59, 59, 999);
 
       try {
-        // Consulta ajustada
         const appointmentsRef = collection(db, "appointments");
         const q = query(
           appointmentsRef,
@@ -46,7 +50,6 @@ export default function Dashboard() {
           } as Appointment);
         });
 
-        console.log('Agendamentos carregados:', loadedAppointments); // Debug
         setAppointments(loadedAppointments);
       } catch (error) {
         console.error("Erro ao carregar agendamentos:", error);
@@ -58,10 +61,14 @@ export default function Dashboard() {
     loadAppointments();
   }, [selectedDate, navigate, user]);
 
-  const timeSlots = [
-    "08:00", "09:00", "10:00", "11:00",
-    "14:00", "15:00", "16:00", "17:00"
-  ];
+  const handleTimeSlotClick = (time: string) => {
+    const appointment = appointments.find(apt => apt.timeSlot === time);
+    if (appointment) {
+      setSelectedAppointment(appointment);
+    } else {
+      navigate(`/agendamento/novo?date=${selectedDate.toISOString()}&time=${time}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -73,10 +80,10 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-4">
             {user?.photoURL ? (
-              <Link to="/perfil" className="flex items-center space-x-2">
+              <Link to="/profile" className="flex items-center space-x-2">
                 <img 
                   src={user.photoURL} 
-                  alt="Perfil" 
+                  alt="Profile" 
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <span className="hidden md:inline">{user.displayName}</span>
@@ -106,7 +113,6 @@ export default function Dashboard() {
 
       <main className="max-w-7xl mx-auto py-6 px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Calendário */}
           <div className="bg-white p-4 rounded-lg shadow">
             <Calendar
               onChange={(date) => date instanceof Date && setSelectedDate(date)}
@@ -115,9 +121,9 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* Horários */}
           <div className="bg-white p-4 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">
+            <h2 className="text-lg font-semibold mb-4 flex items-center">
+              <CalendarIcon className="mr-2" />
               Horários para {selectedDate.toLocaleDateString()}
             </h2>
             
@@ -128,25 +134,25 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 {timeSlots.map((time) => {
-                  const isBooked = appointments.some(apt => apt.timeSlot === time);
+                  const appointment = appointments.find(apt => apt.timeSlot === time);
                   return (
                     <button
                       key={time}
                       type="button"
-                      onClick={() => {
-                        if (!isBooked) {
-                          navigate(`/agendamento/novo?date=${selectedDate.toISOString()}&time=${time}`);
-                        }
-                      }}
-                      disabled={isBooked}
+                      onClick={() => handleTimeSlotClick(time)}
                       className={`p-2 rounded-lg text-center transition-colors ${
-                        isBooked 
-                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        appointment 
+                          ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                           : 'bg-blue-50 text-[#0047BB] hover:bg-blue-100'
                       }`}
                     >
+                      <Clock className="inline-block mr-1" size={16} />
                       {time}
-                      {isBooked && " (Ocupado)"}
+                      {appointment && (
+                        <div className="mt-1 text-xs flex items-center justify-center">
+                          <span className="font-bold">Ocupado</span>
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -155,6 +161,41 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {selectedAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Detalhes do Agendamento</h3>
+              <button
+                onClick={() => setSelectedAppointment(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex items-center mb-4">
+              <img 
+                src={selectedAppointment.userPhotoURL || '/default-avatar.png'} 
+                alt={selectedAppointment.userName}
+                className="w-12 h-12 rounded-full mr-4"
+              />
+              <div>
+                <p className="font-semibold">Agendado por: {selectedAppointment.userName}</p>
+              </div>
+            </div>
+            <p><strong>Data:</strong> {new Date(selectedAppointment.date.seconds * 1000).toLocaleDateString()}</p>
+            <p><strong>Horário:</strong> {selectedAppointment.timeSlot}</p>
+            <p><strong>Serviço:</strong> {selectedAppointment.service}</p>
+            {selectedAppointment.clientName && <p><strong>Cliente:</strong> {selectedAppointment.clientName}</p>}
+            {selectedAppointment.carModel && <p><strong>Modelo do Carro:</strong> {selectedAppointment.carModel}</p>}
+            {selectedAppointment.licensePlate && <p><strong>Placa:</strong> {selectedAppointment.licensePlate}</p>}
+            {selectedAppointment.observations && (
+              <p><strong>Observações:</strong> {selectedAppointment.observations}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
