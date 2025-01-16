@@ -1,27 +1,13 @@
-// app/routes/_index.tsx
-import { useState, useEffect } from "react";
+// app/routes/registro.tsx
+import { useState } from "react";
 import { Link } from "@remix-run/react";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import { auth } from "~/lib/firebase";
-import { json } from "@remix-run/node";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
+import { auth, db } from "~/lib/firebase";
 
-export async function loader() {
-  return json({});
-}
-
-export default function Login() {
+export default function Register() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        window.location.href = "/dashboard";
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,12 +17,24 @@ export default function Login() {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const name = formData.get("name") as string;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      // Criar usuário no Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Salvar informações adicionais no Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        name,
+        email,
+        createdAt: new Date()
+      });
+
+      // Redirecionar para o dashboard
+      window.location.href = "/dashboard";
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Email ou senha incorretos");
+      console.error("Erro no registro:", err);
+      setError("Erro ao criar conta. Verifique os dados e tente novamente.");
       setIsLoading(false);
     }
   };
@@ -50,11 +48,24 @@ export default function Login() {
               <div className="bg-[#0047BB] p-4 rounded-lg shadow-lg">
                 <img src="/laps-logo.png" alt="LAPS" className="h-16 w-auto"/>
               </div>
-              <h2 className="mt-4 text-2xl font-bold text-black">Portal LAPS</h2>
+              <h2 className="mt-4 text-2xl font-bold text-black">Criar Conta</h2>
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Nome Completo
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Email
@@ -77,6 +88,7 @@ export default function Login() {
                     name="password"
                     type="password"
                     required
+                    minLength={6}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
@@ -89,13 +101,13 @@ export default function Login() {
                 disabled={isLoading}
                 className="w-full py-2 px-4 rounded-lg bg-[#0047BB] text-white hover:bg-blue-700"
               >
-                {isLoading ? "Entrando..." : "Entrar"}
+                {isLoading ? "Criando conta..." : "Criar conta"}
               </button>
 
               <p className="text-center text-sm text-gray-600">
-                Não tem uma conta?{" "}
-                <Link to="/registro" className="text-[#0047BB] hover:underline">
-                  Cadastre-se
+                Já tem uma conta?{" "}
+                <Link to="/" className="text-[#0047BB] hover:underline">
+                  Faça login
                 </Link>
               </p>
             </form>
