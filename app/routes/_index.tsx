@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "@remix-run/react";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import { auth } from "~/lib/firebase";
+import { auth } from "../lib/firebase";
 import { json } from "@remix-run/node";
 
 export async function loader() {

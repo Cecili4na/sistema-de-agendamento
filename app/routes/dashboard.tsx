@@ -9,10 +9,10 @@ import interactionPlugin, {
   EventDropArg 
 } from "@fullcalendar/interaction";
 import ptBrLocale from "@fullcalendar/core/locales/pt-br";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "~/components/ui/dialog";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
 import { 
   addDoc, 
   collection, 
@@ -25,10 +25,10 @@ import {
   updateDoc 
 } from "firebase/firestore";
 import { User } from "firebase/auth";
-import { db, auth } from "~/lib/firebase";
+import { db, auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { json } from "@remix-run/node";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "~/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../components/ui/alert-dialog";
 
 // TypeScript interfaces for type safety
 interface EventFormData {

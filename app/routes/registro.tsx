@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link } from "@remix-run/react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
-import { auth, db } from "~/lib/firebase";
+import { auth, db } from "../lib/firebase";
 
 export default function Register() {
   const [error, setError] = useState("");
