@@ -1,29 +1,23 @@
-import { Timestamp } from 'firebase/firestore';
+// types.ts
+import { Timestamp } from "firebase/firestore";
 
-export interface User {
-  uid: string;
-  email: string;
-  name: string;
-  photoURL?: string; // Make photo optional
-  phone?: string; // Optional phone number
-  address?: string; // Optional address
-  createdAt: Timestamp;
+export interface EventFormData {
+  title: string;
+  clientName?: string | null;
+  carModel?: string | null;
+  licensePlate?: string | null;
+  serviceType?: string | null;
+  observations?: string | null;
+  start: Timestamp;
+  end: Timestamp;
+  createdBy: {
+    uid: string;
+    name: string;
+  };
 }
 
-export interface Appointment {
+export interface CalendarEvent extends Omit<EventFormData, 'start' | 'end'> {
   id: string;
-  userId: string;
-  userName: string;
-  userPhotoURL?: string; // Make user photo optional
-  date: Timestamp;
-  timeSlot: string;
-  service: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
-  createdAt: Timestamp;
-  
-  // Optional fields for appointments
-  clientName?: string;
-  carModel?: string;
-  licensePlate?: string;
-  observations?: string;
+  start: Date;
+  end: Date;
 }

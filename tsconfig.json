@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "default",
   "rsc": false,

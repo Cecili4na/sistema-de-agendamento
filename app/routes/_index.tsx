@@ -1,9 +1,15 @@
 // app/routes/_index.tsx
 import { useState, useEffect } from "react";
 import { Link } from "@remix-run/react";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { 
+  signInWithEmailAndPassword, 
+  onAuthStateChanged, 
+  GoogleAuthProvider, 
+  signInWithPopup 
+} from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { json } from "@remix-run/node";
+import { FaGoogle } from "react-icons/fa";
 
 export async function loader() {
   return json({});
@@ -12,6 +18,7 @@ export async function loader() {
 export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -38,6 +45,20 @@ export default function Login() {
       console.error("Login error:", err);
       setError("Email ou senha incorretos");
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setIsGoogleLoading(true);
+
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      console.error("Google Sign-In error:", err);
+      setError("Erro ao fazer login com Google");
+      setIsGoogleLoading(false);
     }
   };
 
@@ -91,14 +112,39 @@ export default function Login() {
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </button>
-
-              <p className="text-center text-sm text-gray-600">
-                Não tem uma conta?{" "}
-                <Link to="/registro" className="text-[#0047BB] hover:underline">
-                  Cadastre-se
-                </Link>
-              </p>
             </form>
+
+            <div className="mt-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">
+                    Ou continue com
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={isGoogleLoading}
+                className="w-full mt-4 py-2 px-4 rounded-lg border border-gray-300 
+                           flex items-center justify-center 
+                           text-gray-700 hover:bg-gray-50
+                           transition duration-300"
+              >
+                <FaGoogle className="mr-2" />
+                {isGoogleLoading ? "Entrando..." : "Entrar com Google"}
+              </button>
+            </div>
+
+            <p className="text-center text-sm text-gray-600 mt-4">
+              Não tem uma conta?{" "}
+              <Link to="/registro" className="text-[#0047BB] hover:underline">
+                Cadastre-se
+              </Link>
+            </p>
           </div>
         </div>
       </div>
