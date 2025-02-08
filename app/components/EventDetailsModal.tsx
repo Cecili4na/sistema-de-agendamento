@@ -1,4 +1,3 @@
-// components/EventDetailsModal.tsx
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 import { Button } from "../components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../components/ui/alert-dialog";
@@ -19,7 +18,6 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
 
   const handleDeleteEvent = async () => {
     if (!selectedEvent) return;
-
     try {
       await deleteDoc(doc(db, "events", selectedEvent.id));
       onClose();
@@ -30,62 +28,57 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
   };
 
   const handlePrint = () => {
-    if (selectedEvent) {
-      const printContent = `
-        <div style="font-family: Arial, sans-serif; font-size: 14px; width: 50%; padding: 20px;">
-          <h2>Detalhes do Agendamento</h2>
-          <p><strong>Título:</strong> ${selectedEvent.title}</p>
-          <p><strong>Cliente:</strong> ${selectedEvent.clientName || ''}</p>
-          <p><strong>Modelo do Carro:</strong> ${selectedEvent.carModel || ''}</p>
-          <p><strong>Placa:</strong> ${selectedEvent.licensePlate || ''}</p>
-          <p><strong>Tipo de Serviço:</strong> ${selectedEvent.serviceType || ''}</p>
-          <p><strong>Criado por:</strong> ${selectedEvent.createdBy.name}</p>
-          <p><strong>Data e Hora:</strong> ${selectedEvent.start.toLocaleString('pt-BR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}</p>
-          <div style="margin-top: 20px;">
-            <h3>Observações:</h3>
-            <p>${selectedEvent.observations || 'Nenhuma observação adicional.'}</p>
-          </div>
+    if (!selectedEvent) return;
+    
+    const printContent = `
+      <div style="font-family: Arial, sans-serif; font-size: 14px; width: 50%; padding: 20px;">
+        <h2>Detalhes do Agendamento</h2>
+        <p><strong>Título:</strong> ${selectedEvent.title}</p>
+        <p><strong>Cliente:</strong> ${selectedEvent.clientName || ''}</p>
+        <p><strong>Modelo do Carro:</strong> ${selectedEvent.carModel || ''}</p>
+        <p><strong>Placa:</strong> ${selectedEvent.licensePlate || ''}</p>
+        <p><strong>Tipo de Serviço:</strong> ${selectedEvent.serviceType || ''}</p>
+        <p><strong>Criado por:</strong> ${selectedEvent.createdBy.name}</p>
+        <p><strong>Data e Hora:</strong> ${selectedEvent.start.toLocaleString('pt-BR', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}</p>
+        <div style="margin-top: 20px;">
+          <h3>Observações:</h3>
+          <p>${selectedEvent.observations || 'Nenhuma observação adicional.'}</p>
         </div>
-      `;
-  
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.open();
-        printWindow.document.write(`
-          <html>
-            <head>
+      </div>
+    `;
 
-              <style>
-                @media print {
-                  body {
-                    margin: 0;
-                    padding: 0;
-                  }
-                }
-              </style>
-            </head>
-            <body>
-              ${printContent}
-              <script>
-                window.onload = function() {
-                  window.print();
-                  window.onafterprint = function() {
-                    window.close();
-                  };
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <style>
+              @media print {
+                body { margin: 0; padding: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+            <script>
+              window.onload = function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
                 };
-              </script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-      }
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
     }
   };
 

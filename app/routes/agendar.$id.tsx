@@ -1,7 +1,6 @@
-// app/routes/agendar.$id.tsx
 import * as React from 'react';
 import { useParams } from '@remix-run/react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -16,7 +15,6 @@ export default function AppointmentForm() {
   React.useEffect(() => {
     const fetchAppointment = async () => {
       if (!id) return;
-
       try {
         const appointmentDoc = await getDoc(doc(db, 'pending_appointments', id));
         if (!appointmentDoc.exists()) {
@@ -24,8 +22,13 @@ export default function AppointmentForm() {
           return;
         }
 
-        setAppointmentData(appointmentDoc.data());
+        const data = appointmentDoc.data();
+        if (data.date && typeof data.date.toDate === 'function') {
+          data.date = data.date.toDate();
+        }
+        setAppointmentData(data);
       } catch (error) {
+        console.error('Erro ao carregar:', error);
         setError('Erro ao carregar dados do agendamento');
       } finally {
         setIsLoading(false);
@@ -40,29 +43,50 @@ export default function AppointmentForm() {
     if (!id || !appointmentData) return;
 
     setIsLoading(true);
+    setError('');
+
     try {
       const formData = new FormData(e.currentTarget);
-      const clientName = formData.get("clientName")?.toString() || "";
-      const carModel = formData.get("carModel")?.toString() || "";
+      const clientName = formData.get("clientName")?.toString().trim();
+      const carModel = formData.get("carModel")?.toString().trim();
+      const licensePlate = formData.get("licensePlate")?.toString().trim();
+      const serviceType = formData.get("serviceType")?.toString().trim();
+      const observations = formData.get("observations")?.toString().trim();
 
-      // Cria o evento no calendário
+      if (!clientName || !carModel || !licensePlate || !serviceType) {
+        setError('Por favor, preencha todos os campos obrigatórios');
+        setIsLoading(false);
+        return;
+      }
+
+      const startDate = appointmentData.date instanceof Date 
+        ? appointmentData.date 
+        : appointmentData.date.toDate();
+
       const eventData = {
-        title: carModel ? `${clientName} - ${carModel}` : clientName,
-        start: appointmentData.date,
-        end: new Date(appointmentData.date.toDate().getTime() + 60 * 60 * 1000),
-        clientName: clientName,
-        carModel: carModel,
-        licensePlate: formData.get("licensePlate")?.toString() || "",
-        serviceType: formData.get("serviceType")?.toString() || "",
-        observations: formData.get("observations")?.toString() || "",
+        title: `${clientName} - ${carModel}`,
+        start: Timestamp.fromDate(startDate),
+        end: Timestamp.fromDate(new Date(startDate.getTime() + 60 * 60 * 1000)),
+        clientName,
+        carModel,
+        licensePlate,
+        serviceType,
+        observations,
         createdBy: appointmentData.createdBy,
-        status: 'confirmed'
+        status: 'confirmed',
+        createdAt: Timestamp.now()
       };
 
+      // Salva o evento confirmado
       await setDoc(doc(db, 'events', id), eventData);
+
+      // Remove o agendamento pendente
+      await deleteDoc(doc(db, 'pending_appointments', id));
+
       window.location.href = '/agendamento-confirmado';
     } catch (error) {
-      setError('Erro ao salvar agendamento');
+      console.error('Erro ao salvar:', error);
+      setError('Erro ao salvar agendamento. Por favor, tente novamente.');
       setIsLoading(false);
     }
   };
@@ -82,6 +106,19 @@ export default function AppointmentForm() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500">{error}</p>
+          <p className="text-gray-600 mt-2">
+            Se o erro persistir, entre em contato com a LAPS
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!appointmentData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500">Dados do agendamento não encontrados</p>
         </div>
       </div>
     );
@@ -91,11 +128,7 @@ export default function AppointmentForm() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow p-6">
         <div className="flex items-center mb-6">
-          <img 
-            src="/laps-logo.png" 
-            alt="LAPS" 
-            className="h-8 w-auto mr-3"
-          />
+          <img src="/laps-logo.png" alt="LAPS" className="h-8 w-auto mr-3" />
           <h1 className="text-2xl font-semibold text-[#0047BB]">
             Agendar Serviço
           </h1>
@@ -103,51 +136,61 @@ export default function AppointmentForm() {
         
         <div className="mb-6">
           <p className="text-gray-600">
-            Data/Hora: {appointmentData.date.toDate().toLocaleString('pt-BR', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
+            Data/Hora: {appointmentData.date instanceof Date 
+              ? appointmentData.date.toLocaleString('pt-BR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }) 
+              : 'Data inválida'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <span className="block text-sm font-medium mb-1">Nome do Cliente</span>
+            <span className="block text-sm font-medium mb-1">Nome do Cliente*</span>
             <Input 
               id="clientName" 
               name="clientName" 
-              className="w-full"
+              className="w-full" 
+              required 
+              maxLength={100}
             />
           </div>
 
           <div>
-            <span className="block text-sm font-medium mb-1">Modelo do Carro</span>
+            <span className="block text-sm font-medium mb-1">Modelo do Carro*</span>
             <Input 
               id="carModel" 
               name="carModel" 
-              className="w-full"
+              className="w-full" 
+              required
+              maxLength={50}
             />
           </div>
 
           <div>
-            <span className="block text-sm font-medium mb-1">Placa</span>
+            <span className="block text-sm font-medium mb-1">Placa*</span>
             <Input 
               id="licensePlate" 
               name="licensePlate" 
-              className="w-full"
+              className="w-full" 
+              required
+              maxLength={10}
             />
           </div>
 
           <div>
-            <span className="block text-sm font-medium mb-1">Tipo de Serviço</span>
+            <span className="block text-sm font-medium mb-1">Tipo de Serviço*</span>
             <Input 
               id="serviceType" 
               name="serviceType" 
-              className="w-full"
+              className="w-full" 
+              required
+              maxLength={100}
             />
           </div>
 
@@ -158,6 +201,7 @@ export default function AppointmentForm() {
               name="observations" 
               rows={3} 
               className="w-full resize-none"
+              maxLength={500}
             />
           </div>
 

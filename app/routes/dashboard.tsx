@@ -1,10 +1,9 @@
-// app/routes/dashboard.tsx
 import { useState, useEffect, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import type { DateSelectArg } from "@fullcalendar/core";
+import type { DateClickArg } from "@fullcalendar/interaction";
 import type { EventClickArg } from "@fullcalendar/core";
 import type { EventDropArg } from "@fullcalendar/core";
 import ptBrLocale from "@fullcalendar/core/locales/pt-br";
@@ -44,6 +43,16 @@ export default function Dashboard() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [userData, setUserData] = useState<UserData | null>(null);
   const calendarRef = useRef<FullCalendar | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
@@ -97,8 +106,8 @@ export default function Dashboard() {
     return () => unsubscribe();
   }, []);
 
-  const handleDateSelect = (selectInfo: DateSelectArg) => {
-    setSelectedDate(selectInfo.start);
+  const handleDateClick = (arg: DateClickArg) => {
+    setSelectedDate(arg.date);
     setIsModalOpen(true);
   };
 
@@ -180,7 +189,7 @@ export default function Dashboard() {
                         timeGridPlugin, 
                         interactionPlugin
                       ]}
-                      initialView="timeGridWeek"
+                      initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
                       headerToolbar={{
                         left: "title",
                         center: "",
@@ -193,38 +202,30 @@ export default function Dashboard() {
                         day: 'Dia'
                       }}
                       locale={ptBrLocale}
-                      selectable={true}
-                      selectMirror={true}
-                      dayMaxEvents={true}
+                      selectable={false}
+                      dateClick={handleDateClick}
                       weekends={false}
-                      select={handleDateSelect}
-                      eventClick={handleEventClick}
                       events={events}
                       editable={true}
                       eventColor="#0047BB"
                       height="auto"
                       contentHeight="auto"
-                      aspectRatio={1.35}
+                      aspectRatio={isMobile ? 0.8 : 1.35}
                       slotMinTime="06:00:00"
                       slotMaxTime="18:00:00"
                       slotDuration="00:30:00"
                       snapDuration="00:15:00"
                       allDaySlot={false}
-                      
-                      // Configurações para melhorar seleção touch
                       selectConstraint="businessHours"
-                      selectOverlap={false}
-                      
-                      // Configurações de interação touch
-                      eventClassNames="touch-auto cursor-pointer"
-                      
+                      eventClick={handleEventClick}
+                      eventClassNames="touch-auto cursor-pointer active:opacity-70 transition-opacity duration-150"
                       businessHours={{
                         daysOfWeek: [1, 2, 3, 4, 5],
                         startTime: '06:00',
                         endTime: '18:00',
                       }}
                       eventContent={(eventInfo) => (
-                        <div className="whitespace-nowrap overflow-hidden text-ellipsis px-2 py-1">
+                        <div className="whitespace-nowrap overflow-hidden text-ellipsis px-2 py-1 active:opacity-70 transition-opacity duration-150">
                           {eventInfo.event.title}
                         </div>
                       )}

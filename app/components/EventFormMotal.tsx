@@ -1,4 +1,3 @@
-// components/EventFormModal.tsx
 import { useState } from "react";
 import { Dialog, DialogContent, DialogClose } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -42,7 +41,10 @@ export default function EventFormModal({
       await setDoc(doc(db, "pending_appointments", appointmentId), {
         date: Timestamp.fromDate(selectedDate),
         status: "pending",
-        createdBy: userData.uid,
+        createdBy: {
+          uid: userData.uid,
+          name: userData.name
+        },
         createdAt: Timestamp.fromDate(new Date())
       });
       
@@ -83,8 +85,12 @@ export default function EventFormModal({
         licensePlate: formData.get("licensePlate")?.toString() || "",
         serviceType: formData.get("serviceType")?.toString() || "",
         observations: formData.get("observations")?.toString() || "",
-        createdBy: userData.uid,
-        status: "confirmed"
+        createdBy: {
+          uid: userData.uid,
+          name: userData.name
+        },
+        status: "confirmed",
+        createdAt: Timestamp.fromDate(new Date())
       };
 
       await setDoc(doc(db, "events", eventId), eventData);

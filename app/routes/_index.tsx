@@ -1,13 +1,14 @@
-// app/routes/_index.tsx
 import { useState, useEffect } from "react";
 import { Link } from "@remix-run/react";
 import { 
   signInWithEmailAndPassword, 
   onAuthStateChanged, 
   GoogleAuthProvider, 
-  signInWithPopup 
+  signInWithPopup,
+  
 } from "firebase/auth";
-import { auth } from "../lib/firebase";
+import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import { auth, db } from "../lib/firebase";
 import { json } from "@remix-run/node";
 import { FaGoogle } from "react-icons/fa";
 
@@ -54,10 +55,45 @@ export default function Login() {
 
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Salva ou atualiza os dados do usuário
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+          name: user.displayName || user.email?.split('@')[0] || 'Usuário',
+          email: user.email,
+          createdAt: Timestamp.now()
+        });
+      } else {
+        // Atualiza o nome se necessário
+        if (userDoc.data().name !== user.displayName && user.displayName) {
+          await setDoc(userDocRef, {
+            ...userDoc.data(),
+            name: user.displayName
+          }, { merge: true });
+        }
+      }
+
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error("Google Sign-In error:", err);
-      setError("Erro ao fazer login com Google");
+      if (err.code === 'auth/popup-blocked') {
+        setError('Por favor, permita popups para este site');
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setError('Login cancelado. Tente novamente');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError('Este domínio não está autorizado');
+      } else {
+        setError('Erro ao fazer login com Google');
+      }
       setIsGoogleLoading(false);
     }
   };
