@@ -191,7 +191,7 @@ export default function AppointmentForm() {
 
           <Button 
             type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700" 
+            className="w-full bg-blue-600 hover:bg-blue-700 rounded-full" 
             disabled={isLoading}
           >
             {isLoading ? "Salvando..." : "Confirmar Agendamento"}

@@ -85,7 +85,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="bg-white">
+        <DialogContent className="bg-white rounded-2xl">
           <DialogHeader>
             <DialogTitle>Detalhes do Agendamento</DialogTitle>
           </DialogHeader>
@@ -159,6 +159,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
                 type="button"
                 variant="destructive"
                 onClick={() => setIsDeleteDialogOpen(true)}
+                className="rounded-full"
               >
                 Deletar
               </Button>
@@ -166,6 +167,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
                 type="button"
                 variant="outline"
                 onClick={handlePrint}
+                className="rounded-full"
               >
                 <Printer className="w-4 h-4 mr-2" />
                 Imprimir
@@ -175,6 +177,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
               type="button"
               variant="outline"
               onClick={onClose}
+              className="rounded-full"
             >
               Fechar
             </Button>
@@ -183,7 +186,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
       </Dialog>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Tem certeza que deseja excluir este agendamento?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -191,10 +194,10 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent }: EventDetai
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-full">Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteEvent} 
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 rounded-full"
             >
               Excluir
             </AlertDialogAction>
