@@ -105,6 +105,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent, onEdit }: Ev
           <p style="margin-bottom: 5px;"><strong>Placa:</strong> ${selectedEvent.licensePlate || ''}</p>
           <p style="margin-bottom: 5px;"><strong>Telefone:</strong> ${selectedEvent.phone || ''}</p>
           <p style="margin-bottom: 5px;"><strong>CPF:</strong> ${selectedEvent.cpf || ''}</p>
+          <p style="margin-bottom: 5px;"><strong>KM:</strong> </p>
         </div>
    
         ${renderServices()}
