@@ -38,8 +38,10 @@ export async function loader() {
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [userData, setUserData] = useState<UserData | null>(null);
   const calendarRef = useRef<FullCalendar | null>(null);
@@ -115,6 +117,12 @@ export default function Dashboard() {
     const event = events.find(event => event.id === info.event.id);
     setSelectedEvent(event || null);
     setIsViewModalOpen(true);
+  };
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    setEventToEdit(event);
+    setIsEditModalOpen(true);
+    setIsViewModalOpen(false);
   };
 
   const handleEventDrop = async (dropInfo: EventDropArg) => {
@@ -218,17 +226,28 @@ export default function Dashboard() {
                       allDaySlot={false}
                       selectConstraint="businessHours"
                       eventClick={handleEventClick}
-                      eventClassNames="touch-auto cursor-pointer active:opacity-70 transition-opacity duration-150"
-                      businessHours={{
-                        daysOfWeek: [1, 2, 3, 4, 5],
-                        startTime: '06:00',
-                        endTime: '18:00',
+                      eventContent={(eventInfo) => {
+                        const eventId = eventInfo.event.id;
+                        const event = events.find(e => e.id === eventId);
+                        const isCanceled = event?.status === "canceled";
+                        
+                        return (
+                          <div 
+                            className="whitespace-nowrap overflow-hidden text-ellipsis px-2 py-1"
+                            style={{
+                              backgroundColor: isCanceled ? '#A52A2A' : '',
+                              color: isCanceled ? 'white' : '',
+                              borderColor: isCanceled ? '#E9967A' : '',
+                             
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center'
+                            }}
+                          >
+                            {eventInfo.event.title}
+                          </div>
+                        );
                       }}
-                      eventContent={(eventInfo) => (
-                        <div className="whitespace-nowrap overflow-hidden text-ellipsis px-2 py-1 active:opacity-70 transition-opacity duration-150">
-                          {eventInfo.event.title}
-                        </div>
-                      )}
                       eventDrop={handleEventDrop}
                       views={{
                         timeGridDay: {
@@ -262,6 +281,15 @@ export default function Dashboard() {
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         selectedEvent={selectedEvent}
+        onEdit={handleEditEvent}
+      />
+
+      <EventFormModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        selectedDate={eventToEdit ? eventToEdit.start : null}
+        userData={userData}
+        eventToEdit={eventToEdit}
       />
     </div>
   );

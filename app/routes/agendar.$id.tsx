@@ -5,12 +5,14 @@ import { db } from '../lib/firebase';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+import { Plus, X } from 'lucide-react';
 
 export default function AppointmentForm() {
   const { id } = useParams();
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState('');
   const [appointmentData, setAppointmentData] = React.useState(null);
+  const [services, setServices] = React.useState([{ name: '' }]);
 
   React.useEffect(() => {
     const fetchAppointment = async () => {
@@ -38,6 +40,26 @@ export default function AppointmentForm() {
     fetchAppointment();
   }, [id]);
 
+  const addService = () => {
+    setServices([...services, { name: '' }]);
+  };
+
+  const removeService = (index) => {
+    if (services.length > 1) {
+      setServices(services.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateService = (index, field, value) => {
+    const newServices = services.map((service, i) => {
+      if (i === index) {
+        return { ...service, [field]: value };
+      }
+      return service;
+    });
+    setServices(newServices);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!id || !appointmentData) return;
@@ -50,37 +72,35 @@ export default function AppointmentForm() {
       const clientName = formData.get("clientName")?.toString().trim();
       const carModel = formData.get("carModel")?.toString().trim();
       const licensePlate = formData.get("licensePlate")?.toString().trim();
-      const serviceType = formData.get("serviceType")?.toString().trim();
+      const phone = formData.get("phone")?.toString().trim();
+      const cpf = formData.get("cpf")?.toString().trim();
       const observations = formData.get("observations")?.toString().trim();
-
-      if (!clientName || !carModel || !licensePlate || !serviceType) {
-        setError('Por favor, preencha todos os campos obrigatórios');
-        setIsLoading(false);
-        return;
-      }
 
       const startDate = appointmentData.date instanceof Date 
         ? appointmentData.date 
         : appointmentData.date.toDate();
 
       const eventData = {
-        title: `${clientName} - ${carModel}`,
+        title: carModel 
+          ? `${clientName} - ${carModel}` 
+          : clientName,
         start: Timestamp.fromDate(startDate),
         end: Timestamp.fromDate(new Date(startDate.getTime() + 60 * 60 * 1000)),
         clientName,
-        carModel,
-        licensePlate,
-        serviceType,
-        observations,
+        carModel: carModel || '',
+        licensePlate: licensePlate || '',
+        phone: phone || '',
+        cpf: cpf || '',
+        services: services.filter(service => service.name.trim() !== ''),
+        observations: observations || '',
         createdBy: appointmentData.createdBy,
         status: 'confirmed',
         createdAt: Timestamp.now()
       };
 
-      // Salva o evento confirmado
       await setDoc(doc(db, 'events', id), eventData);
 
-      // Remove o agendamento pendente
+    
       await deleteDoc(doc(db, 'pending_appointments', id));
 
       window.location.href = '/agendamento-confirmado';
@@ -133,17 +153,15 @@ export default function AppointmentForm() {
             Agendar Serviço
           </h1>
         </div>
-        
+      
         <div className="mb-6">
           <p className="text-gray-600">
-            Data/Hora: {appointmentData.date instanceof Date 
+            Data do agendamento: {appointmentData.date instanceof Date 
               ? appointmentData.date.toLocaleString('pt-BR', {
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
                 }) 
               : 'Data inválida'}
           </p>
@@ -184,14 +202,63 @@ export default function AppointmentForm() {
           </div>
 
           <div>
-            <span className="block text-sm font-medium mb-1">Tipo de Serviço*</span>
+            <span className="block text-sm font-medium mb-1">Telefone</span>
             <Input 
-              id="serviceType" 
-              name="serviceType" 
-              className="w-full" 
-              required
-              maxLength={100}
+              id="phone" 
+              name="phone" 
+              className="w-full"
+              maxLength={20}
             />
+          </div>
+
+          <div>
+            <span className="block text-sm font-medium mb-1">CPF</span>
+            <Input 
+              id="cpf" 
+              name="cpf" 
+              className="w-full"
+              maxLength={14}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="block text-sm font-medium">Serviços</span>
+              <Button
+                type="button"
+                onClick={addService}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+              >
+                <Plus className="h-4 w-4" />
+                Adicionar
+              </Button>
+            </div>
+                
+            {services.map((service, index) => (
+              <div key={index} className="flex gap-2 items-start bg-gray-50 p-3 rounded-md">
+                <div className="flex-1 space-y-2">
+                  <Input
+                    placeholder="Nome do serviço"
+                    value={service.name}
+                    onChange={(e) => updateService(index, 'name', e.target.value)}
+                    className="bg-white"
+                  />
+                </div>
+                {services.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() => removeService(index)}
+                    variant="ghost"
+                    size="icon"
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
 
           <div>
@@ -199,19 +266,22 @@ export default function AppointmentForm() {
             <Textarea 
               id="observations" 
               name="observations" 
-              rows={3} 
+              rows={3}
               className="w-full resize-none"
-              maxLength={500}
             />
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700" 
-            disabled={isLoading}
-          >
-            {isLoading ? "Salvando..." : "Confirmar Agendamento"}
-          </Button>
+          <p>Atenção: o horario para entrega do carro deve ser entre 6:30 e 8 horas. Caso o cliente não possa ir nesse horario, comunicar às nossas atendentes, obrigado!</p>
+
+          <div className="flex gap-2 pt-4">
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
+            >
+              {isLoading ? "Salvando..." : "Confirmar Agendamento"}
+            </Button>
+          </div>
         </form>
       </div>
     </div>
