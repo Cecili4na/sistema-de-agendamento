@@ -265,7 +265,7 @@ export default function AppointmentForm() {
           </div>
 
           <div>
-            <span className="block text-sm font-medium mb-1">Observações</span>
+            <span className="block text-sm font-medium mb-1">Obações</span>
             <Textarea 
               id="observations" 
               name="observations" 

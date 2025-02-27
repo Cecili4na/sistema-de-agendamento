@@ -74,6 +74,7 @@ export default function AppointmentForm() {
       const licensePlate = formData.get("licensePlate")?.toString().trim();
       const phone = formData.get("phone")?.toString().trim();
       const cpf = formData.get("cpf")?.toString().trim();
+      const km = formData.get("km")?.toString().trim();
       const observations = formData.get("observations")?.toString().trim();
 
       const startDate = appointmentData.date instanceof Date 
@@ -91,6 +92,7 @@ export default function AppointmentForm() {
         licensePlate: licensePlate || '',
         phone: phone || '',
         cpf: cpf || '',
+        km: km || '',
         services: services.filter(service => service.name.trim() !== ''),
         observations: observations || '',
         createdBy: appointmentData.createdBy,
@@ -100,7 +102,6 @@ export default function AppointmentForm() {
 
       await setDoc(doc(db, 'events', id), eventData);
 
-    
       await deleteDoc(doc(db, 'pending_appointments', id));
 
       window.location.href = '/agendamento-confirmado';
@@ -153,7 +154,7 @@ export default function AppointmentForm() {
             Agendar Serviço
           </h1>
         </div>
-      
+
         <div className="mb-6">
           <p className="text-gray-600">
             Data do agendamento: {appointmentData.date instanceof Date 
@@ -198,6 +199,16 @@ export default function AppointmentForm() {
               className="w-full" 
               required
               maxLength={10}
+            />
+          </div>
+
+          <div>
+            <span className="block text-sm font-medium mb-1">Quilometragem (opcional)</span>
+            <Input 
+              id="km" 
+              name="km" 
+              className="w-full"
+              maxLength={14}
             />
           </div>
 
@@ -271,7 +282,10 @@ export default function AppointmentForm() {
             />
           </div>
 
-          <p>Atenção: o horario para entrega do carro deve ser entre 6:30 e 8 horas. Caso o cliente não possa ir nesse horario, comunicar às nossas atendentes, obrigado!</p>
+          <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md text-yellow-800 text-sm">
+            <strong>Atenção:</strong> O horário para entrega do carro deve ser entre 6:30 e 8 horas. 
+            Caso o cliente não possa ir nesse horário, comunicar às nossas atendentes.
+          </div>
 
           <div className="flex gap-2 pt-4">
             <Button 

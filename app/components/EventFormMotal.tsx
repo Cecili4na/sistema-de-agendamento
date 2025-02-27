@@ -124,6 +124,7 @@ export default function EventFormModal({
         licensePlate: formData.get("licensePlate")?.toString() || "",
         phone: formData.get("phone")?.toString() || "",
         cpf: formData.get("cpf")?.toString() || "",
+        km: formData.get("km")?.toString() || "",
         serviceType: formData.get("serviceType")?.toString() || "",
         services: services.filter(service => service.name.trim() !== ''),
         observations: formData.get("observations")?.toString() || "",
@@ -150,7 +151,7 @@ export default function EventFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent className="sm:max-w-[425px] bg-white max-h-[90vh] overflow-y-auto">
         <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
           <X className="h-4 w-4" />
           <span className="sr-only">Fechar</span>
@@ -253,6 +254,17 @@ export default function EventFormModal({
                   name="cpf" 
                   className="w-full"
                   defaultValue={eventToEdit?.cpf || ""}
+                />
+              </div>
+              <div>
+                <span className="block text-sm font-medium mb-1">
+                  Quilometragem (opcional)
+                </span>
+                <Input 
+                  id="km" 
+                  name="km" 
+                  className="w-full"
+                  defaultValue={eventToEdit?.km || ""}
                 />
               </div>
 

@@ -105,7 +105,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent, onEdit }: Ev
           <p style="margin-bottom: 5px;"><strong>Placa:</strong> ${selectedEvent.licensePlate || ''}</p>
           <p style="margin-bottom: 5px;"><strong>Telefone:</strong> ${selectedEvent.phone || ''}</p>
           <p style="margin-bottom: 5px;"><strong>CPF:</strong> ${selectedEvent.cpf || ''}</p>
-          <p style="margin-bottom: 5px;"><strong>KM:</strong> </p>
+          <p style="margin-bottom: 5px;"><strong>Quilometragem:</strong> ${selectedEvent.km || ''}</p>
         </div>
    
         ${renderServices()}
@@ -143,7 +143,7 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent, onEdit }: Ev
         printWindow.close();
       });
     });
-   };
+  };
 
   return (
     <>
@@ -192,6 +192,13 @@ export function EventDetailsModal({ isOpen, onClose, selectedEvent, onEdit }: Ev
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">CPF</h3>
                   <p className="mt-1">{selectedEvent.cpf}</p>
+                </div>
+              )}
+
+              {selectedEvent.km && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Quilometragem</h3>
+                  <p className="mt-1">{selectedEvent.km}</p>
                 </div>
               )}
 
