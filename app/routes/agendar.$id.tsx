@@ -74,6 +74,7 @@ export default function AppointmentForm() {
       const licensePlate = formData.get("licensePlate")?.toString().trim();
       const phone = formData.get("phone")?.toString().trim();
       const cpf = formData.get("cpf")?.toString().trim();
+      const km = formData.get("km")?.toString().trim();
       const observations = formData.get("observations")?.toString().trim();
 
       const startDate = appointmentData.date instanceof Date 
@@ -91,6 +92,7 @@ export default function AppointmentForm() {
         licensePlate: licensePlate || '',
         phone: phone || '',
         cpf: cpf || '',
+        km: km || '',
         services: services.filter(service => service.name.trim() !== ''),
         observations: observations || '',
         createdBy: appointmentData.createdBy,
@@ -200,6 +202,15 @@ export default function AppointmentForm() {
               maxLength={10}
             />
           </div>
+          <div>
+            <span className="block text-sm font-medium mb-1">Quilometragem (opcional)</span>
+            <Input 
+              id="ckm" 
+              name="km" 
+              className="w-full"
+              maxLength={14}
+            />
+          </div>
 
           <div>
             <span className="block text-sm font-medium mb-1">Telefone</span>
@@ -220,6 +231,7 @@ export default function AppointmentForm() {
               maxLength={14}
             />
           </div>
+
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">

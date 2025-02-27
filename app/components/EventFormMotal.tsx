@@ -124,6 +124,7 @@ export default function EventFormModal({
         licensePlate: formData.get("licensePlate")?.toString() || "",
         phone: formData.get("phone")?.toString() || "",
         cpf: formData.get("cpf")?.toString() || "",
+        km: formData.get("km")?.toString() || "",
         serviceType: formData.get("serviceType")?.toString() || "",
         services: services.filter(service => service.name.trim() !== ''),
         observations: formData.get("observations")?.toString() || "",
@@ -253,6 +254,17 @@ export default function EventFormModal({
                   name="cpf" 
                   className="w-full"
                   defaultValue={eventToEdit?.cpf || ""}
+                />
+              </div>
+              <div>
+                <span className="block text-sm font-medium mb-1">
+                  Quilometragem (opcional)
+                </span>
+                <Input 
+                  id="km" 
+                  name="km" 
+                  className="w-full"
+                  defaultValue={eventToEdit?.km || ""}
                 />
               </div>
 

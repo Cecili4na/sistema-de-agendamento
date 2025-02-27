@@ -21,6 +21,7 @@ export interface EventFormData {
 }
 
 export interface CalendarEvent extends Omit<EventFormData, 'start' | 'end'> {
+  km: string;
   id: string;
   start: Date;
   end: Date;
